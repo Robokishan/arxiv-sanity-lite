@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  web:
+    image: robokishan/arxiv-sanity-lite:latest
+    container_name: arxiv-web
+    environment:
+      - FLASK_APP=serve.py
+      - FLASK_ENV=production
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+      - ./static/thumb:/app/static/thumb
+    restart: unless-stopped
+    depends_on:
+      - worker
+
+  worker:
+    image: robokishan/arxiv-sanity-lite:latest
+    container_name: arxiv-worker
+    command: ["bash", "-lc", "python arxiv_daemon.py --num 2000 && python compute.py && tail -f /dev/null"]
+    volumes:
+      - ./data:/app/data
+      - ./static/thumb:/app/static/thumb
+    restart: unless-stopped
+
+
+
